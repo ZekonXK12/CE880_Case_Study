@@ -6,28 +6,45 @@ from torch.utils.data import Dataset, DataLoader
 
 
 class MLPBiomass(nn.Module):
-    def __init__(self, n_input=8, n_output=7):
-        super(MLPBiomass,self).__init__()
-        self.fc1 = nn.Linear(in_features=n_input, out_features=128)
+    def __init__(self, n_input, n_output):
+        super(MLPBiomass, self).__init__()
+        # hidden 1
+        self.fc1 = nn.Linear(in_features=n_input, out_features=256)
         self.relu1 = nn.ReLU()
-        self.fc2 = nn.Linear(in_features=128, out_features=64)
+        self.bn1 = nn.BatchNorm1d(256)
+
+        # hidden 2
+        self.dropout1 = nn.Dropout(0.25)
+        self.fc2 = nn.Linear(in_features=256, out_features=128)
         self.relu2 = nn.ReLU()
-        self.fc3 = nn.Linear(in_features=64, out_features=32)
-        self.relu3=nn.ReLU()
-        self.linear=nn.Linear(in_features=32, out_features=n_output)
+        self.bn2 = nn.BatchNorm1d(128)
+
+        # hidden 3
+        self.fc3 = nn.Linear(in_features=128, out_features=64)
+        self.relu3 = nn.ReLU()
+        self.bn3 = nn.BatchNorm1d(64)
+
+        # linear output
+        self.linear_output = nn.Linear(in_features=64, out_features=n_output)
 
     def forward(self, x):
         # hidden 1
-        output = self.fc1(x)
-        output = self.relu1(output)
-        # # hidden 2
-        output = self.fc2(output)
-        output = self.relu2(output)
+        x = self.fc1(x)
+        x = self.relu1(x)
+        x = self.bn1(x)
+
+        # hidden 2
+        x = self.fc2(x)
+        x = self.relu2(x)
+        x = self.bn2(x)
+
         # hidden 3
-        output = self.fc3(output)
-        output=self.relu3(output)
+        x = self.fc3(x)
+        x = self.relu3(x)
+        x = self.bn3(x)
+
         # linear output
-        output=self.linear(output)
+        output = self.linear_output(x)
 
         return output
 
